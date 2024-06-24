@@ -15,16 +15,22 @@
     {name-type word})) ;; {:firstname "STeve" :lastname "Triphahn"}
 
 (defn get-name
-  [{:keys [firstname]} {:keys [lastname]}]
+  [[{:keys [firstname]} {:keys [lastname]}]]
   (cond
     (and firstname lastname) (str firstname " " lastname)
     (and firstname (nil? lastname)) firstname
     :else nil))
 
 ;; return a list of names
+(defn- get-full-name
+  [acc findings]
+  (if-let [n  (get-name findings)]
+    (conj acc n)
+    acc))
+
 (defn extract-names [article-text]
-  (let [ns (map check-name (clojure.string/split article-text #"\W"))]
-    (keep identity (map get-name ns (rest ns)))))
+  (let [names (map check-name (clojure.string/split article-text #"\W"))]
+    (reduce get-full-name [] (partition-all 2 1 names))))
 
 (comment
   (def article "I am an article for Kyoshi. This is John Smith.  This is Steve Triphahn.\nThis is another sentence.")
