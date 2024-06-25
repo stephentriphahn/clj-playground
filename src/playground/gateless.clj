@@ -15,6 +15,7 @@
         lastname (= :lastname (name-check word2))]
     (cond
       (and firstname lastname) (conj acc (str word1 " " word2))
+      (and lastname (false? firstname)) (conj acc word2)
       (and firstname (false? lastname)) (conj acc word1)
       :else acc))) ;; {:firstname "STeve" :lastname "Triphahn"}
 
@@ -26,6 +27,7 @@
 
 (comment
   (def article "I am an article for Kyoshi. This is John Smith.  This is Steve Triphahn.\nThis is another sentence.")
-  (extract-names article) ;; => ["John Smith" "Steve Triphahn"]
+  (def article2 "The name Smith is a last name. Kyoshi and Steve do not have that name. The following family names are cool: Smith, Triphahn.")
+  (extract-names article2) ;; => ["John Smith" "Steve Triphahn"]
   (re-seq #"\w+" article)
   #_())
