@@ -29,10 +29,12 @@
     acc))
 
 (defn extract-names [article-text]
-  (let [names (map check-name (clojure.string/split article-text #"\W"))]
+  (let [names (map check-name (re-seq #"\w+" article-text))]
     (reduce get-full-name [] (partition-all 2 1 names))))
 
 (comment
   (def article "I am an article for Kyoshi. This is John Smith.  This is Steve Triphahn.\nThis is another sentence.")
   (extract-names article) ;; => ["John Smith" "Steve Triphahn"]
+  (clojure.string/split article #"\W+")
+  (re-seq #"\w+" article)
   #_())
