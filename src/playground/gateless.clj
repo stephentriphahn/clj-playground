@@ -10,31 +10,22 @@
     ("Smith" "Triphahn") :lastname
     nil))
 
-(defn check-name [word]
-  (when-let [name-type (name-check word)]
-    {name-type word})) ;; {:firstname "STeve" :lastname "Triphahn"}
-
-(defn get-name
-  [[{:keys [firstname]} {:keys [lastname]}]]
-  (cond
-    (and firstname lastname) (str firstname " " lastname)
-    (and firstname (nil? lastname)) firstname
-    :else nil))
-
-;; return a list of names
-(defn- get-full-name
-  [acc findings]
-  (if-let [n  (get-name findings)]
-    (conj acc n)
-    acc))
+(defn check-name [acc [word1 word2]]
+  (let [firstname (= :firstname (name-check word1))
+        lastname (= :lastname (name-check word2))]
+    (cond
+      (and firstname lastname) (conj acc (str word1 " " word2))
+      (and firstname (false? lastname)) (conj acc word1)
+      :else acc))) ;; {:firstname "STeve" :lastname "Triphahn"}
 
 (defn extract-names [article-text]
-  (let [names (map check-name (re-seq #"\w+" article-text))]
-    (reduce get-full-name [] (partition-all 2 1 names))))
+  (->> article-text
+       (re-seq #"\w+")
+       (partition-all 2 1)
+       (reduce check-name [])))
 
 (comment
   (def article "I am an article for Kyoshi. This is John Smith.  This is Steve Triphahn.\nThis is another sentence.")
   (extract-names article) ;; => ["John Smith" "Steve Triphahn"]
-  (clojure.string/split article #"\W+")
   (re-seq #"\w+" article)
   #_())
