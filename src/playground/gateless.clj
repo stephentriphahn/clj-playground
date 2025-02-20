@@ -10,24 +10,29 @@
     ("Smith" "Triphahn") :lastname
     nil))
 
-(defn check-name [acc [word1 word2]]
-  (let [firstname (= :firstname (name-check word1))
-        lastname (= :lastname (name-check word2))]
+(def first-name? #(= % :firstname))
+(def last-name? #(= % :lastname))
+(defn check-name2
+  [acc [first-word next-word]]
+  (let [[t1 n1] first-word
+        [t2 n2] next-word]
     (cond
-      (and firstname lastname) (conj acc (str word1 " " word2))
-      (and lastname (false? firstname)) (conj acc word2)
-      (and firstname (false? lastname)) (conj acc word1)
-      :else acc))) ;; {:firstname "STeve" :lastname "Triphahn"}
+      (and (first-name? t1) (last-name? t2)) (conj acc (str n1 " " n2))
+      (first-name? t1) (conj acc n1)
+      (last-name? t2) (conj acc n2)
+      :default acc)))
 
-(defn extract-names [article-text]
-  (->> article-text
+(defn- list-names
+  [text]
+  (->> text
        (re-seq #"\w+")
+       (cons nil)
+       (map (juxt name-check identity))
        (partition-all 2 1)
-       (reduce check-name [])))
+       (reduce check-name2 [])))
 
 (comment
   (def article "I am an article for Kyoshi. This is John Smith.  This is Steve Triphahn.\nThis is another sentence.")
-  (def article2 "The name Smith is a last name. Kyoshi and Steve do not have that name. The following family names are cool: Smith, Triphahn.")
-  (extract-names article2) ;; => ["John Smith" "Steve Triphahn"]
-  (re-seq #"\w+" article)
+  (def article2 "Triphahn. The name Smith is a last name. Kyoshi and Steve do not have that name. The following family names are cool: Smith, Triphahn.")
+  (list-names article2) ;; => ["John Smith" "Steve Triphahn"]
   #_())
